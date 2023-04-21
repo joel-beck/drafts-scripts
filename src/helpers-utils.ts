@@ -1,12 +1,5 @@
 import { getSelectedText } from "./helpers-get-text";
 
-// replace text in entire draft with debug text, add debug() function at the *end* of
-// the function which is dubugged
-export const debug = (text: string): void => {
-  // @ts-ignore
-  editor.setText(text);
-};
-
 export const getClipboard = (): string => {
   // @ts-ignore
   return app.getClipboard();

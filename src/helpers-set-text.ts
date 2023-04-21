@@ -1,9 +1,15 @@
 import {
+  getDraftContent,
   getSelectedText,
   getTextFromStartEnd,
   getTextfromRange,
   isLastLine,
 } from "./helpers-get-text";
+
+export const setDraftContent = (text: string): void => {
+  // @ts-ignore
+  editor.setText(text);
+};
 
 export const setSelectedText = (text: string): void => {
   // @ts-ignore
@@ -103,4 +109,23 @@ export const transformAndReplaceSelectedText = (
 ) => {
   const transformedText = transformSelectedText(transformationFunction);
   setSelectedText(transformedText);
+};
+
+/**
+print function for debugging
+- takes an arbitrary number of inputs
+- prints the variable name and its value for each input on a separate line
+- prints output at the end of the draft separated from the draft content with three
+  dashes and a prefix
+*/
+export const print = (...inputs: (string | number)[]): void => {
+  const debugPrefix = "\n---\nDebugging Output:\n";
+  // join all inputs into a single string
+  const joinedInputs = inputs.join("\n");
+  const debugText = debugPrefix + joinedInputs;
+
+  const draftContent = getDraftContent();
+  const output = draftContent + debugText;
+
+  setDraftContent(output);
 };

@@ -26,6 +26,7 @@ export {
   highlightItalic,
   insertMarkdownImage,
   insertMarkdownLink,
+  linebreakWithinList,
   toggleMarkdownCheckboxes,
   toggleMarkdownTasks,
 } from "./actions-markdown";

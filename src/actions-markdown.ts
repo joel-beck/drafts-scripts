@@ -1,4 +1,6 @@
 import {
+  getCurrentLineEndIndex,
+  getCurrentLineStartIndex,
   getSelectedRange,
   getSelectedText,
   getSelectionEndIndex,
@@ -6,14 +8,18 @@ import {
   getSelectionOrCurrentLineStartIndex,
   getTextAfter,
   getTextBefore,
+  getTextFromStartEnd,
   getTextfromRange,
 } from "./helpers-get-text";
 
 import {
+  print,
   setCursorPosition,
   setSelectedText,
   setSelectionRange,
   setSelectionStartEnd,
+  setTextFromStartEnd,
+  setTextinRange,
 } from "./helpers-set-text";
 
 import { getUrlFromClipboard } from "./helpers-utils";
@@ -424,4 +430,42 @@ export const toggleMarkdownTasks = (): void => {
 export const toggleMarkdownCheckboxes = (): void => {
   const toggleMarkdown = new ToggleMarkdown();
   toggleMarkdown.toggleMarkdownCheckboxes();
+};
+
+// SUBSECTION: Markdown Lists
+/**
+Shift+Enter within a list should jump to the next line
+- without adding a new list marker
+- keeping the indentation of the current line
+*/
+export const linebreakWithinList = (): void => {
+  // this is the absolute index within the draft
+  const currentLineStartIndex = getCurrentLineStartIndex();
+  const currentLineEndIndex = getCurrentLineEndIndex();
+  const currentLineText = getTextFromStartEnd(
+    currentLineStartIndex,
+    currentLineEndIndex
+  );
+
+  const hasListMarker = currentLineText.match("^\\s*[-]");
+  // 2 for the list marker itself and the following whitespace
+  const extraListMarkerLength = hasListMarker ? 2 : 0;
+  const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
+
+  // only whitespace at the beginning of the line
+  // if line does not start with whitespace, set to empty string
+  const currentLineWhitespace = currentLineText.match("^\\s*")?.[0] ?? "";
+
+  // add whitespace characters until reaching the indentation length within the next line
+  const whitespaceIndentation =
+    "\n" + currentLineWhitespace + extraListMarkerWhitespace;
+
+  const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
+
+  setTextFromStartEnd(
+    whitespaceIndentation,
+    currentLineEndIndex,
+    newCursorPosition
+  );
+  setCursorPosition(newCursorPosition);
 };

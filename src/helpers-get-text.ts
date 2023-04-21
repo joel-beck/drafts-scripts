@@ -1,3 +1,18 @@
+export const getDraftContent = (): string => {
+  // @ts-ignore
+  return draft.content;
+};
+
+export const getDraftLength = (): number => {
+  // @ts-ignore
+  return draft.content.length;
+};
+
+export const getSelectedText = (): string => {
+  // @ts-ignore
+  return editor.getSelectedText();
+};
+
 export const getSelectedRange = (): [number, number] => {
   // @ts-ignore
   return editor.getSelectedRange();
@@ -19,11 +34,6 @@ export const getSelectionLength = (): number => {
 export const isLastLine = (text: string): boolean => {
   // only last line in draft does not end with newline
   return !text.endsWith("\n");
-};
-
-export const getDraftLength = (): number => {
-  // @ts-ignore
-  return draft.content.length;
 };
 
 export const isEndOfDraft = (positionIndex: number): boolean => {
@@ -67,7 +77,18 @@ export const getCurrentLineRange = (): [number, number] => {
   const [currentLineStartIndex, currentLineLength] =
     // @ts-ignore
     editor.getSelectedLineRange();
-  // subtract one from current line length to exclude newline character
+
+  // if current line does not end with newline (i.e. is the last line of the draft) keep
+  // the current line length, else subtract one to exclude the newline character
+  const currentLineText = getTextfromRange(
+    currentLineStartIndex,
+    currentLineLength
+  );
+
+  if (isLastLine(currentLineText)) {
+    return [currentLineStartIndex, currentLineLength];
+  }
+
   return [currentLineStartIndex, currentLineLength - 1];
 };
 
@@ -81,11 +102,6 @@ export const getCurrentLineLength = (): number => {
 
 export const getCurrentLineEndIndex = (): number => {
   return getCurrentLineStartIndex() + getCurrentLineLength();
-};
-
-export const getSelectedText = (): string => {
-  // @ts-ignore
-  return editor.getSelectedText();
 };
 
 export const getSelectionOrCurrentLineRange = (): [number, number] => {

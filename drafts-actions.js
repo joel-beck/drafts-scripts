@@ -1,3 +1,11 @@
+const getDraftLength = () => {
+    // @ts-ignore
+    return draft.content.length;
+};
+const getSelectedText = () => {
+    // @ts-ignore
+    return editor.getSelectedText();
+};
 const getSelectedRange = () => {
     // @ts-ignore
     return editor.getSelectedRange();
@@ -12,10 +20,6 @@ const getCursorPosition = () => {
 const isLastLine = (text) => {
     // only last line in draft does not end with newline
     return !text.endsWith("\n");
-};
-const getDraftLength = () => {
-    // @ts-ignore
-    return draft.content.length;
 };
 const isEndOfDraft = (positionIndex) => {
     return positionIndex === getDraftLength();
@@ -49,15 +53,22 @@ const getCurrentLineRange = () => {
     const [currentLineStartIndex, currentLineLength] = 
     // @ts-ignore
     editor.getSelectedLineRange();
-    // subtract one from current line length to exclude newline character
+    // if current line does not end with newline (i.e. is the last line of the draft) keep
+    // the current line length, else subtract one to exclude the newline character
+    const currentLineText = getTextfromRange(currentLineStartIndex, currentLineLength);
+    if (isLastLine(currentLineText)) {
+        return [currentLineStartIndex, currentLineLength];
+    }
     return [currentLineStartIndex, currentLineLength - 1];
 };
 const getCurrentLineStartIndex = () => {
     return getCurrentLineRange()[0];
 };
-const getSelectedText = () => {
-    // @ts-ignore
-    return editor.getSelectedText();
+const getCurrentLineLength = () => {
+    return getCurrentLineRange()[1];
+};
+const getCurrentLineEndIndex = () => {
+    return getCurrentLineStartIndex() + getCurrentLineLength();
 };
 const getSelectionOrCurrentLineRange = () => {
     const selectedText = getSelectedText();
@@ -120,6 +131,9 @@ const setSelectedText = (text) => {
 const setTextinRange = (text, startIndex, length) => {
     // @ts-ignore
     editor.setTextInRange(startIndex, length, text);
+};
+const setTextFromStartEnd = (text, startIndex, endIndex) => {
+    setTextinRange(text, startIndex, endIndex - startIndex);
 };
 const setSelectionRange = (selectionStartIndex, selectionLength) => {
     // @ts-ignore
@@ -822,6 +836,31 @@ const toggleMarkdownTasks = () => {
 const toggleMarkdownCheckboxes = () => {
     const toggleMarkdown = new ToggleMarkdown();
     toggleMarkdown.toggleMarkdownCheckboxes();
+};
+// SUBSECTION: Markdown Lists
+/**
+Shift+Enter within a list should jump to the next line
+- without adding a new list marker
+- keeping the indentation of the current line
+*/
+const linebreakWithinList = () => {
+    var _a, _b;
+    // this is the absolute index within the draft
+    const currentLineStartIndex = getCurrentLineStartIndex();
+    const currentLineEndIndex = getCurrentLineEndIndex();
+    const currentLineText = getTextFromStartEnd(currentLineStartIndex, currentLineEndIndex);
+    const hasListMarker = currentLineText.match("^\\s*[-]");
+    // 2 for the list marker itself and the following whitespace
+    const extraListMarkerLength = hasListMarker ? 2 : 0;
+    const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
+    // only whitespace at the beginning of the line
+    // if line does not start with whitespace, set to empty string
+    const currentLineWhitespace = (_b = (_a = currentLineText.match("^\\s*")) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : "";
+    // add whitespace characters until reaching the indentation length within the next line
+    const whitespaceIndentation = "\n" + currentLineWhitespace + extraListMarkerWhitespace;
+    const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
+    setTextFromStartEnd(whitespaceIndentation, currentLineEndIndex, newCursorPosition);
+    setCursorPosition(newCursorPosition);
 };
 
 const removeExtraWhitespace = (str) => {
