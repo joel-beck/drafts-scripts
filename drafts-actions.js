@@ -200,114 +200,64 @@ const getUrlFromClipboard = () => {
 };
 
 class CopyCutDelete {
+    lineStartIndex;
+    lineLength;
+    text;
+    cursorPosition;
     constructor() {
-        Object.defineProperty(this, "lineStartIndex", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "lineLength", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "text", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "cursorPosition", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "addNewlineIfEndOfDraft", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                // if original line is last line in draft, add newline as separator between the lines,
-                // i.e. after the new text
-                return isLastLine(this.text) ? "\n" : "";
-            }
-        });
-        Object.defineProperty(this, "copyLineUp", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                // copy line up
-                setTextinRange(this.text + this.addNewlineIfEndOfDraft(), this.lineStartIndex, 0);
-                // keep cursor at the same position
-                setCursorPosition(this.cursorPosition);
-            }
-        });
-        Object.defineProperty(this, "copyLineDown", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                const newlineIfEndOfDraft = this.addNewlineIfEndOfDraft();
-                // copy line down
-                setTextinRange(newlineIfEndOfDraft + this.text, this.lineStartIndex + this.lineLength, 0);
-                // set cursor at the same position, just one line below
-                setCursorPosition(this.cursorPosition + this.lineLength + newlineIfEndOfDraft.length);
-            }
-        });
-        Object.defineProperty(this, "copyLineToClipboard", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                const selectedText = getSelectedTextOrCurrentLine();
-                copyToClipboard(selectedText);
-            }
-        });
-        Object.defineProperty(this, "cutLine", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                const selectedRange = getSelectionOrCurrentLineRange();
-                const selectedText = getTextfromRange(...selectedRange);
-                copyToClipboard(selectedText);
-                setSelectionRangeKeepNewline(...selectedRange);
-                setSelectedText("");
-            }
-        });
-        Object.defineProperty(this, "deleteLine", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                // replace text in current line with nothing
-                setTextinRange("", this.lineStartIndex, this.lineLength);
-                // text from current line end to end of draft
-                let remainingText = getTextfromRange(this.lineStartIndex + this.lineLength - 2, getDraftLength()).trim();
-                if (remainingText) {
-                    // any of the following lines contain text: set cursor to beginning of current line
-                    setCursorPosition(this.lineStartIndex);
-                }
-                else {
-                    // all following lines are empty:
-                    // set cursor to end of previous line
-                    setCursorPosition(this.lineStartIndex - 1);
-                    // get line range of previous line
-                    const previousLineStartIndex = getCurrentLineStartIndex();
-                    // set cursor to beginning of previous line
-                    setCursorPosition(previousLineStartIndex);
-                }
-                // debug(remainingText);
-            }
-        });
         [this.lineStartIndex, this.lineLength] = getCurrentLineRange();
         this.text = getTextfromRange(this.lineStartIndex, this.lineLength);
         this.cursorPosition = getCursorPosition();
     }
+    addNewlineIfEndOfDraft = () => {
+        // if original line is last line in draft, add newline as separator between the lines,
+        // i.e. after the new text
+        return isLastLine(this.text) ? "\n" : "";
+    };
+    copyLineUp = () => {
+        // copy line up
+        setTextinRange(this.text + this.addNewlineIfEndOfDraft(), this.lineStartIndex, 0);
+        // keep cursor at the same position
+        setCursorPosition(this.cursorPosition);
+    };
+    copyLineDown = () => {
+        const newlineIfEndOfDraft = this.addNewlineIfEndOfDraft();
+        // copy line down
+        setTextinRange(newlineIfEndOfDraft + this.text, this.lineStartIndex + this.lineLength, 0);
+        // set cursor at the same position, just one line below
+        setCursorPosition(this.cursorPosition + this.lineLength + newlineIfEndOfDraft.length);
+    };
+    copyLineToClipboard = () => {
+        const selectedText = getSelectedTextOrCurrentLine();
+        copyToClipboard(selectedText);
+    };
+    cutLine = () => {
+        const selectedRange = getSelectionOrCurrentLineRange();
+        const selectedText = getTextfromRange(...selectedRange);
+        copyToClipboard(selectedText);
+        setSelectionRangeKeepNewline(...selectedRange);
+        setSelectedText("");
+    };
+    deleteLine = () => {
+        // replace text in current line with nothing
+        setTextinRange("", this.lineStartIndex, this.lineLength);
+        // text from current line end to end of draft
+        let remainingText = getTextfromRange(this.lineStartIndex + this.lineLength - 2, getDraftLength()).trim();
+        if (remainingText) {
+            // any of the following lines contain text: set cursor to beginning of current line
+            setCursorPosition(this.lineStartIndex);
+        }
+        else {
+            // all following lines are empty:
+            // set cursor to end of previous line
+            setCursorPosition(this.lineStartIndex - 1);
+            // get line range of previous line
+            const previousLineStartIndex = getCurrentLineStartIndex();
+            // set cursor to beginning of previous line
+            setCursorPosition(previousLineStartIndex);
+        }
+        // debug(remainingText);
+    };
 }
 const copyLineUp = () => {
     const copyCutDelete = new CopyCutDelete();
@@ -410,160 +360,90 @@ const jumpToNextHeader = () => {
 };
 
 class SyntaxHighlighter {
+    selectionStartIndex;
+    selectionLength;
+    selectionEndIndex;
+    selectedText;
     constructor() {
-        Object.defineProperty(this, "selectionStartIndex", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "selectionLength", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "selectionEndIndex", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "selectedText", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "textIsSelected", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                return this.selectionLength > 0;
-            }
-        });
-        // check if characters before selection start and after selection end are highlight
-        // characters
-        Object.defineProperty(this, "textIsHighlightedAsymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightPrefix, highlightSuffix) => {
-                const textBeforeSelection = getTextBefore(this.selectionStartIndex);
-                const textAfterSelection = getTextAfter(this.selectionEndIndex);
-                return (textBeforeSelection.endsWith(highlightPrefix) &&
-                    textAfterSelection.startsWith(highlightSuffix));
-            }
-        });
-        Object.defineProperty(this, "textIsHighlightedSymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightChar) => {
-                return this.textIsHighlightedAsymmetric(highlightChar, highlightChar);
-            }
-        });
-        // add highlight characters around selected text
-        Object.defineProperty(this, "addHighlightAsymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightPrefix, highlightSuffix) => {
-                // replaces original selection
-                setSelectedText(highlightPrefix + this.selectedText + highlightSuffix);
-                setCursorPosition(this.selectionEndIndex + highlightPrefix.length + highlightSuffix.length);
-            }
-        });
-        Object.defineProperty(this, "addHighlightSymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightChar) => {
-                this.addHighlightAsymmetric(highlightChar, highlightChar);
-            }
-        });
-        Object.defineProperty(this, "removeHighlightAsymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightPrefix, highlightSuffix) => {
-                setSelectionStartEnd(this.selectionStartIndex - highlightPrefix.length, this.selectionEndIndex + highlightSuffix.length);
-                setSelectedText(this.selectedText);
-            }
-        });
-        // remove highlight characters around selected text
-        Object.defineProperty(this, "removeHighlightSymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightChar) => {
-                this.removeHighlightAsymmetric(highlightChar, highlightChar);
-            }
-        });
-        Object.defineProperty(this, "openOrClose", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightChar) => {
-                setSelectedText(highlightChar);
-                // sets cursor after highlighting character
-                setCursorPosition(this.selectionStartIndex + highlightChar.length);
-            }
-        });
-        Object.defineProperty(this, "addOrRemoveHighlightSymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightChar) => {
-                // case 1: no selection => add open or closing highlight character
-                if (!this.textIsSelected()) {
-                    this.openOrClose(highlightChar);
-                    return;
-                }
-                // case 2: text is selected and already highlighted => remove highlight
-                if (this.textIsHighlightedSymmetric(highlightChar)) {
-                    this.removeHighlightSymmetric(highlightChar);
-                    return;
-                }
-                // case 3: text is selected but not highlighted => add highlight
-                this.addHighlightSymmetric(highlightChar);
-            }
-        });
-        Object.defineProperty(this, "addOrRemoveHighlightAsymmetric", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (highlightPrefix, highlightSuffix) => {
-                // case 1: no selection => add open or closing highlight character
-                if (!this.textIsSelected()) {
-                    // check if last highlight character before cursor is prefix or suffix
-                    const textBeforeCursor = getTextBefore(this.selectionStartIndex);
-                    const lastPrefixIndex = textBeforeCursor.lastIndexOf(highlightPrefix);
-                    const lastSuffixIndex = textBeforeCursor.lastIndexOf(highlightSuffix);
-                    if (lastPrefixIndex > lastSuffixIndex) {
-                        // last highlight character before cursor is prefix
-                        this.openOrClose(highlightSuffix);
-                    }
-                    else {
-                        // last highlight character before cursor is suffix
-                        this.openOrClose(highlightPrefix);
-                    }
-                    return;
-                }
-                // case 2: text is selected and already highlighted => remove highlight
-                if (this.textIsHighlightedAsymmetric(highlightPrefix, highlightSuffix)) {
-                    this.removeHighlightAsymmetric(highlightPrefix, highlightSuffix);
-                    return;
-                }
-                // case 3: text is selected but not highlighted => add highlight
-                this.addHighlightAsymmetric(highlightPrefix, highlightSuffix);
-            }
-        });
         [this.selectionStartIndex, this.selectionLength] = getSelectedRange();
         this.selectionEndIndex = getSelectionEndIndex(this.selectionStartIndex, this.selectionLength);
         this.selectedText = getSelectedText();
     }
+    textIsSelected = () => {
+        return this.selectionLength > 0;
+    };
+    // check if characters before selection start and after selection end are highlight
+    // characters
+    textIsHighlightedAsymmetric = (highlightPrefix, highlightSuffix) => {
+        const textBeforeSelection = getTextBefore(this.selectionStartIndex);
+        const textAfterSelection = getTextAfter(this.selectionEndIndex);
+        return (textBeforeSelection.endsWith(highlightPrefix) &&
+            textAfterSelection.startsWith(highlightSuffix));
+    };
+    textIsHighlightedSymmetric = (highlightChar) => {
+        return this.textIsHighlightedAsymmetric(highlightChar, highlightChar);
+    };
+    // add highlight characters around selected text
+    addHighlightAsymmetric = (highlightPrefix, highlightSuffix) => {
+        // replaces original selection
+        setSelectedText(highlightPrefix + this.selectedText + highlightSuffix);
+        setCursorPosition(this.selectionEndIndex + highlightPrefix.length + highlightSuffix.length);
+    };
+    addHighlightSymmetric = (highlightChar) => {
+        this.addHighlightAsymmetric(highlightChar, highlightChar);
+    };
+    removeHighlightAsymmetric = (highlightPrefix, highlightSuffix) => {
+        setSelectionStartEnd(this.selectionStartIndex - highlightPrefix.length, this.selectionEndIndex + highlightSuffix.length);
+        setSelectedText(this.selectedText);
+    };
+    // remove highlight characters around selected text
+    removeHighlightSymmetric = (highlightChar) => {
+        this.removeHighlightAsymmetric(highlightChar, highlightChar);
+    };
+    openOrClose = (highlightChar) => {
+        setSelectedText(highlightChar);
+        // sets cursor after highlighting character
+        setCursorPosition(this.selectionStartIndex + highlightChar.length);
+    };
+    addOrRemoveHighlightSymmetric = (highlightChar) => {
+        // case 1: no selection => add open or closing highlight character
+        if (!this.textIsSelected()) {
+            this.openOrClose(highlightChar);
+            return;
+        }
+        // case 2: text is selected and already highlighted => remove highlight
+        if (this.textIsHighlightedSymmetric(highlightChar)) {
+            this.removeHighlightSymmetric(highlightChar);
+            return;
+        }
+        // case 3: text is selected but not highlighted => add highlight
+        this.addHighlightSymmetric(highlightChar);
+    };
+    addOrRemoveHighlightAsymmetric = (highlightPrefix, highlightSuffix) => {
+        // case 1: no selection => add open or closing highlight character
+        if (!this.textIsSelected()) {
+            // check if last highlight character before cursor is prefix or suffix
+            const textBeforeCursor = getTextBefore(this.selectionStartIndex);
+            const lastPrefixIndex = textBeforeCursor.lastIndexOf(highlightPrefix);
+            const lastSuffixIndex = textBeforeCursor.lastIndexOf(highlightSuffix);
+            if (lastPrefixIndex > lastSuffixIndex) {
+                // last highlight character before cursor is prefix
+                this.openOrClose(highlightSuffix);
+            }
+            else {
+                // last highlight character before cursor is suffix
+                this.openOrClose(highlightPrefix);
+            }
+            return;
+        }
+        // case 2: text is selected and already highlighted => remove highlight
+        if (this.textIsHighlightedAsymmetric(highlightPrefix, highlightSuffix)) {
+            this.removeHighlightAsymmetric(highlightPrefix, highlightSuffix);
+            return;
+        }
+        // case 3: text is selected but not highlighted => add highlight
+        this.addHighlightAsymmetric(highlightPrefix, highlightSuffix);
+    };
 }
 const highlightBold = () => {
     const syntaxHighlighter = new SyntaxHighlighter();
@@ -583,37 +463,17 @@ const highlightCodeBlock = () => {
 };
 
 class MarkdownLink {
+    selectedText;
+    selectionStartIndex;
+    selectionLength;
+    url;
+    prefix;
     constructor(selectedText, selectionStartIndex, selectionLength, url, prefix) {
-        Object.defineProperty(this, "selectedText", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: selectedText
-        });
-        Object.defineProperty(this, "selectionStartIndex", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: selectionStartIndex
-        });
-        Object.defineProperty(this, "selectionLength", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: selectionLength
-        });
-        Object.defineProperty(this, "url", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: url
-        });
-        Object.defineProperty(this, "prefix", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: prefix
-        });
+        this.selectedText = selectedText;
+        this.selectionStartIndex = selectionStartIndex;
+        this.selectionLength = selectionLength;
+        this.url = url;
+        this.prefix = prefix;
     }
     insertEmptyLink() {
         setSelectedText(`${this.prefix}[]()`);
@@ -672,7 +532,6 @@ Shift+Enter within a list should jump to the next line
 - keeping the indentation of the current line
 */
 const linebreakWithinList = () => {
-    var _a, _b;
     // this is the absolute index within the draft
     const currentLineStartIndex = getCurrentLineStartIndex();
     const currentLineEndIndex = getCurrentLineEndIndex();
@@ -683,7 +542,7 @@ const linebreakWithinList = () => {
     const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
     // only whitespace at the beginning of the line
     // if line does not start with whitespace, set to empty string
-    const currentLineWhitespace = (_b = (_a = currentLineText.match("^\\s*")) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : "";
+    const currentLineWhitespace = currentLineText.match("^\\s*")?.[0] ?? "";
     // add whitespace characters until reaching the indentation length within the next line
     const whitespaceIndentation = "\n" + currentLineWhitespace + extraListMarkerWhitespace;
     const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
@@ -692,85 +551,10 @@ const linebreakWithinList = () => {
 };
 
 class ToggleMarkdown {
+    taskState;
+    taskPatterns;
+    CheckboxPatterns;
     constructor() {
-        Object.defineProperty(this, "taskState", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "taskPatterns", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "CheckboxPatterns", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "toggleMarkdown", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (toggleFunction) => {
-                const selectionStartIndex = getSelectionOrCurrentLineStartIndex();
-                const selectionLength = getSelectionOrCurrentLineLength();
-                const selection = getTextfromRange(selectionStartIndex, selectionLength);
-                const toggledSelection = toggleFunction(selection);
-                setSelectionRange(selectionStartIndex, selectionLength);
-                setSelectedText(toggledSelection);
-                const toggledSelectionEndIndex = getSelectionEndIndex(selectionStartIndex, toggledSelection.length);
-                setCursorPosition(toggledSelectionEndIndex);
-            }
-        });
-        Object.defineProperty(this, "toggleTasksSelection", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (selection) => {
-                const selectedLines = selection.split("\n");
-                if (this.selectionHasTask(selectedLines)) {
-                    return selectedLines
-                        .map((line) => this.removeTaskMarkerIfRequired(line))
-                        .join("\n");
-                }
-                return selectedLines
-                    .map((line) => this.addTaskMarkerIfRequired(line))
-                    .join("\n");
-            }
-        });
-        Object.defineProperty(this, "toggleMarkdownTasks", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                this.toggleMarkdown(this.toggleTasksSelection);
-            }
-        });
-        Object.defineProperty(this, "toggleCheckboxesSelection", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (selection) => {
-                const selectedLines = selection.split("\n");
-                // at least one line contains checked checkbox
-                if (this.selectionIsChecked(selectedLines)) {
-                    return selectedLines.map((line) => this.uncheckBox(line)).join("\n");
-                }
-                return selectedLines.map((line) => this.checkBox(line)).join("\n");
-            }
-        });
-        Object.defineProperty(this, "toggleMarkdownCheckboxes", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: () => {
-                this.toggleMarkdown(this.toggleCheckboxesSelection);
-            }
-        });
         this.taskState = {
             uncheckedBox: "[ ]",
             checkedBox: "[x]",
@@ -790,6 +574,16 @@ class ToggleMarkdown {
     selectionHasItem(selectedLines, checkFunction) {
         return selectedLines.some((line) => checkFunction(line));
     }
+    toggleMarkdown = (toggleFunction) => {
+        const selectionStartIndex = getSelectionOrCurrentLineStartIndex();
+        const selectionLength = getSelectionOrCurrentLineLength();
+        const selection = getTextfromRange(selectionStartIndex, selectionLength);
+        const toggledSelection = toggleFunction(selection);
+        setSelectionRange(selectionStartIndex, selectionLength);
+        setSelectedText(toggledSelection);
+        const toggledSelectionEndIndex = getSelectionEndIndex(selectionStartIndex, toggledSelection.length);
+        setCursorPosition(toggledSelectionEndIndex);
+    };
     lineHasTask(line) {
         return this.lineHasPattern(line, this.taskPatterns);
     }
@@ -814,6 +608,20 @@ class ToggleMarkdown {
     selectionHasTask(selectedLines) {
         return this.selectionHasItem(selectedLines, (line) => this.lineHasTask(line));
     }
+    toggleTasksSelection = (selection) => {
+        const selectedLines = selection.split("\n");
+        if (this.selectionHasTask(selectedLines)) {
+            return selectedLines
+                .map((line) => this.removeTaskMarkerIfRequired(line))
+                .join("\n");
+        }
+        return selectedLines
+            .map((line) => this.addTaskMarkerIfRequired(line))
+            .join("\n");
+    };
+    toggleMarkdownTasks = () => {
+        this.toggleMarkdown(this.toggleTasksSelection);
+    };
     lineHasCheckbox(line) {
         return this.lineHasPattern(line, this.CheckboxPatterns);
     }
@@ -836,6 +644,17 @@ class ToggleMarkdown {
     selectionIsChecked(selectedLines) {
         return this.selectionHasItem(selectedLines, (line) => this.lineHasCheckbox(line) && this.lineIsChecked(line));
     }
+    toggleCheckboxesSelection = (selection) => {
+        const selectedLines = selection.split("\n");
+        // at least one line contains checked checkbox
+        if (this.selectionIsChecked(selectedLines)) {
+            return selectedLines.map((line) => this.uncheckBox(line)).join("\n");
+        }
+        return selectedLines.map((line) => this.checkBox(line)).join("\n");
+    };
+    toggleMarkdownCheckboxes = () => {
+        this.toggleMarkdown(this.toggleCheckboxesSelection);
+    };
 }
 /**
      Strategy:
