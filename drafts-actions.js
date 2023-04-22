@@ -199,24 +199,6 @@ const getUrlFromClipboard = () => {
     return isUrl(clipboard) ? clipboard : "";
 };
 
-const insertDictation = () => {
-    const [selectionStartIndex, selectionLength] = getSelectedRange();
-    // dictate
-    // @ts-ignore
-    const dictatedText = editor.dictate();
-    if (dictatedText) {
-        setTextinRange(dictatedText, selectionStartIndex, selectionLength);
-        setCursorPosition(selectionStartIndex + dictatedText.length);
-        // @ts-ignore
-        editor.activate();
-    }
-};
-const pasteClipboard = () => {
-    const clipboard = getClipboard();
-    const selectionStartIndex = getSelectionStartIndex();
-    insertTextAndSetCursor(clipboard, selectionStartIndex);
-};
-// SUBSECTION: Copy, Cut, Delete
 class CopyCutDelete {
     constructor() {
         Object.defineProperty(this, "lineStartIndex", {
@@ -347,7 +329,7 @@ const deleteLine = () => {
     const copyCutDelete = new CopyCutDelete();
     copyCutDelete.deleteLine();
 };
-// SUBSECTION: Selection
+
 const selectSection = (sectionSeparator) => {
     const cursorPosition = getCursorPosition();
     const previousSeparatorPosition = getPreviousOccurrenceIndex(sectionSeparator, cursorPosition);
@@ -380,6 +362,24 @@ const selectAll = () => {
     setSelectionRange(0, endOfDraft);
 };
 
+const insertDictation = () => {
+    const [selectionStartIndex, selectionLength] = getSelectedRange();
+    // dictate
+    // @ts-ignore
+    const dictatedText = editor.dictate();
+    if (dictatedText) {
+        setTextinRange(dictatedText, selectionStartIndex, selectionLength);
+        setCursorPosition(selectionStartIndex + dictatedText.length);
+        // @ts-ignore
+        editor.activate();
+    }
+};
+const pasteClipboard = () => {
+    const clipboard = getClipboard();
+    const selectionStartIndex = getSelectionStartIndex();
+    insertTextAndSetCursor(clipboard, selectionStartIndex);
+};
+
 const moveCursorLeft = () => {
     const selectionStartIndex = getSelectionStartIndex();
     // if cursor is not at the beginning of the line, else do nothing
@@ -409,7 +409,6 @@ const jumpToNextHeader = () => {
     setCursorPosition(nextHeaderPosition);
 };
 
-// SUBSECTION: Syntax Highlighting
 class SyntaxHighlighter {
     constructor() {
         Object.defineProperty(this, "selectionStartIndex", {
@@ -582,7 +581,7 @@ const highlightCodeBlock = () => {
     const syntaxHighlighter = new SyntaxHighlighter();
     syntaxHighlighter.addOrRemoveHighlightAsymmetric("```\n", "\n```");
 };
-// SUBSECTION: Markdown Links
+
 class MarkdownLink {
     constructor(selectedText, selectionStartIndex, selectionLength, url, prefix) {
         Object.defineProperty(this, "selectedText", {
@@ -666,7 +665,32 @@ const insertMarkdownLink = () => {
 const insertMarkdownImage = () => {
     insertMarkdownLinkWithPrefix("!");
 };
-// SUBSECTION: Markdown Tasks and Checkboxes
+
+/**
+Shift+Enter within a list should jump to the next line
+- without adding a new list marker
+- keeping the indentation of the current line
+*/
+const linebreakWithinList = () => {
+    var _a, _b;
+    // this is the absolute index within the draft
+    const currentLineStartIndex = getCurrentLineStartIndex();
+    const currentLineEndIndex = getCurrentLineEndIndex();
+    const currentLineText = getTextFromStartEnd(currentLineStartIndex, currentLineEndIndex);
+    const hasListMarker = currentLineText.match("^\\s*[-]");
+    // 2 for the list marker itself and the following whitespace
+    const extraListMarkerLength = hasListMarker ? 2 : 0;
+    const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
+    // only whitespace at the beginning of the line
+    // if line does not start with whitespace, set to empty string
+    const currentLineWhitespace = (_b = (_a = currentLineText.match("^\\s*")) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : "";
+    // add whitespace characters until reaching the indentation length within the next line
+    const whitespaceIndentation = "\n" + currentLineWhitespace + extraListMarkerWhitespace;
+    const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
+    setTextFromStartEnd(whitespaceIndentation, currentLineEndIndex, newCursorPosition);
+    setCursorPosition(newCursorPosition);
+};
+
 class ToggleMarkdown {
     constructor() {
         Object.defineProperty(this, "taskState", {
@@ -766,7 +790,6 @@ class ToggleMarkdown {
     selectionHasItem(selectedLines, checkFunction) {
         return selectedLines.some((line) => checkFunction(line));
     }
-    // SUBSECTION: Markdown Tasks
     lineHasTask(line) {
         return this.lineHasPattern(line, this.taskPatterns);
     }
@@ -791,7 +814,6 @@ class ToggleMarkdown {
     selectionHasTask(selectedLines) {
         return this.selectionHasItem(selectedLines, (line) => this.lineHasTask(line));
     }
-    // SUBSECTION: Markdown Checkboxes
     lineHasCheckbox(line) {
         return this.lineHasPattern(line, this.CheckboxPatterns);
     }
@@ -836,31 +858,6 @@ const toggleMarkdownTasks = () => {
 const toggleMarkdownCheckboxes = () => {
     const toggleMarkdown = new ToggleMarkdown();
     toggleMarkdown.toggleMarkdownCheckboxes();
-};
-// SUBSECTION: Markdown Lists
-/**
-Shift+Enter within a list should jump to the next line
-- without adding a new list marker
-- keeping the indentation of the current line
-*/
-const linebreakWithinList = () => {
-    var _a, _b;
-    // this is the absolute index within the draft
-    const currentLineStartIndex = getCurrentLineStartIndex();
-    const currentLineEndIndex = getCurrentLineEndIndex();
-    const currentLineText = getTextFromStartEnd(currentLineStartIndex, currentLineEndIndex);
-    const hasListMarker = currentLineText.match("^\\s*[-]");
-    // 2 for the list marker itself and the following whitespace
-    const extraListMarkerLength = hasListMarker ? 2 : 0;
-    const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
-    // only whitespace at the beginning of the line
-    // if line does not start with whitespace, set to empty string
-    const currentLineWhitespace = (_b = (_a = currentLineText.match("^\\s*")) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : "";
-    // add whitespace characters until reaching the indentation length within the next line
-    const whitespaceIndentation = "\n" + currentLineWhitespace + extraListMarkerWhitespace;
-    const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
-    setTextFromStartEnd(whitespaceIndentation, currentLineEndIndex, newCursorPosition);
-    setCursorPosition(newCursorPosition);
 };
 
 const removeExtraWhitespace = (str) => {

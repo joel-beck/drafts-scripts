@@ -4,13 +4,16 @@ export {
   copyLineUp,
   cutLine,
   deleteLine,
-  insertDictation,
-  pasteClipboard,
+} from "./actions-editing-copycutdelete";
+
+export {
   selectAll,
   selectLine,
   selectParagraph,
   selectResponse,
-} from "./actions-editing";
+} from "./actions-editing-selection";
+
+export { insertDictation, pasteClipboard } from "./actions-editing-utils";
 
 export {
   jumpToNextHeader,
@@ -24,12 +27,19 @@ export {
   highlightCode,
   highlightCodeBlock,
   highlightItalic,
+} from "./actions-markdown-highlighting";
+
+export {
   insertMarkdownImage,
   insertMarkdownLink,
-  linebreakWithinList,
+} from "./actions-markdown-links";
+
+export { linebreakWithinList } from "./actions-markdown-lists";
+
+export {
   toggleMarkdownCheckboxes,
   toggleMarkdownTasks,
-} from "./actions-markdown";
+} from "./actions-markdown-tasks";
 
 export {
   capitalize,
