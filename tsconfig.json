@@ -2,19 +2,15 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext"],
+    "typeRoots": ["drafts-type-definitions.js"],
     "strict": true,
+    "downlevelIteration": true,
     "esModuleInterop": true,
-    "moduleResolution": "Node",
     "noImplicitReturns": true,
     "noUnusedParameters": true,
-    "resolveJsonModule": true,
     "skipLibCheck": true,
-    "sourceMap": true,
-    "typeRoots": ["drafts-type-definitions.js"],
-    "useDefineForClassFields": true,
-    "isolatedModules": false,
-    "downlevelIteration": true
+    "useDefineForClassFields": true
   },
   "include": ["./src/**/*.ts"]
 }
