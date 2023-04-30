@@ -786,8 +786,12 @@ const sortLines = () => {
 
 class MathEvaluator {
     selectedText;
+    separator;
+    numbers;
     constructor() {
         this.selectedText = getSelectedText().trim();
+        this.separator = this.findSeparator();
+        this.numbers = this.splitBySeparator();
     }
     evaluate() {
         return eval(this.selectedText);
@@ -807,27 +811,22 @@ class MathEvaluator {
         return this.selectedText.split(separator).map((n) => Number(n));
     }
     sumToInt() {
-        const numbers = this.splitBySeparator();
-        return numbers.reduce((a, b) => a + b, 0);
+        return this.numbers.reduce((a, b) => a + b, 0);
     }
     sum() {
         return this.sumToInt().toString();
     }
     product() {
-        const numbers = this.splitBySeparator();
-        return numbers.reduce((a, b) => a * b, 1).toString();
+        return this.numbers.reduce((a, b) => a * b, 1).toString();
     }
     max() {
-        const numbers = this.splitBySeparator();
-        return Math.max(...numbers).toString();
+        return Math.max(...this.numbers).toString();
     }
     min() {
-        const numbers = this.splitBySeparator();
-        return Math.min(...numbers).toString();
+        return Math.min(...this.numbers).toString();
     }
     mean() {
-        const numbers = this.splitBySeparator();
-        return (this.sumToInt() / numbers.length).toString();
+        return (this.sumToInt() / this.numbers.length).toString();
     }
 }
 // function to evaluate a mathematical expression in a string with javascript

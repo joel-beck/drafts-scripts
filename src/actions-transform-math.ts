@@ -3,9 +3,13 @@ import { transformAndReplaceSelectedText } from "./helpers-set-text";
 
 class MathEvaluator {
   public selectedText: string;
+  public separator: string;
+  public numbers: number[];
 
   constructor() {
     this.selectedText = getSelectedText().trim();
+    this.separator = this.findSeparator();
+    this.numbers = this.splitBySeparator();
   }
 
   public evaluate(): string {
@@ -31,8 +35,7 @@ class MathEvaluator {
   }
 
   private sumToInt(): number {
-    const numbers = this.splitBySeparator();
-    return numbers.reduce((a, b) => a + b, 0);
+    return this.numbers.reduce((a, b) => a + b, 0);
   }
 
   public sum(): string {
@@ -40,23 +43,19 @@ class MathEvaluator {
   }
 
   public product(): string {
-    const numbers = this.splitBySeparator();
-    return numbers.reduce((a, b) => a * b, 1).toString();
+    return this.numbers.reduce((a, b) => a * b, 1).toString();
   }
 
   public max(): string {
-    const numbers = this.splitBySeparator();
-    return Math.max(...numbers).toString();
+    return Math.max(...this.numbers).toString();
   }
 
   public min(): string {
-    const numbers = this.splitBySeparator();
-    return Math.min(...numbers).toString();
+    return Math.min(...this.numbers).toString();
   }
 
   public mean(): string {
-    const numbers = this.splitBySeparator();
-    return (this.sumToInt() / numbers.length).toString();
+    return (this.sumToInt() / this.numbers.length).toString();
   }
 }
 
