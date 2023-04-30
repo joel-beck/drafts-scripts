@@ -784,6 +784,90 @@ const sortLines = () => {
     });
 };
 
+class MathEvaluator {
+    selectedText;
+    constructor() {
+        this.selectedText = getSelectedText().trim();
+    }
+    evaluate() {
+        return eval(this.selectedText);
+    }
+    // precedence order: newline > comma > space
+    findSeparator() {
+        if (this.selectedText.includes("\n")) {
+            return "\n";
+        }
+        if (this.selectedText.includes(",")) {
+            return ",";
+        }
+        return " ";
+    }
+    splitBySeparator() {
+        const separator = this.findSeparator();
+        return this.selectedText.split(separator).map((n) => Number(n));
+    }
+    sumToInt() {
+        const numbers = this.splitBySeparator();
+        return numbers.reduce((a, b) => a + b, 0);
+    }
+    sum() {
+        return this.sumToInt().toString();
+    }
+    product() {
+        const numbers = this.splitBySeparator();
+        return numbers.reduce((a, b) => a * b, 1).toString();
+    }
+    max() {
+        const numbers = this.splitBySeparator();
+        return Math.max(...numbers).toString();
+    }
+    min() {
+        const numbers = this.splitBySeparator();
+        return Math.min(...numbers).toString();
+    }
+    mean() {
+        const numbers = this.splitBySeparator();
+        return (this.sumToInt() / numbers.length).toString();
+    }
+}
+// function to evaluate a mathematical expression in a string with javascript
+const evaluate = () => {
+    const mathEvaluator = new MathEvaluator();
+    transformAndReplaceSelectedText(() => {
+        return mathEvaluator.evaluate();
+    });
+};
+const sum = () => {
+    const mathEvaluator = new MathEvaluator();
+    transformAndReplaceSelectedText(() => {
+        return mathEvaluator.sum();
+    });
+};
+const product = () => {
+    const mathEvaluator = new MathEvaluator();
+    transformAndReplaceSelectedText(() => {
+        return mathEvaluator.product();
+    });
+};
+const max = () => {
+    const mathEvaluator = new MathEvaluator();
+    transformAndReplaceSelectedText(() => {
+        return mathEvaluator.max();
+    });
+};
+const min = () => {
+    const mathEvaluator = new MathEvaluator();
+    transformAndReplaceSelectedText(() => {
+        return mathEvaluator.min();
+    });
+};
+const mean = () => {
+    const mathEvaluator = new MathEvaluator();
+    transformAndReplaceSelectedText(() => {
+        return mathEvaluator.mean();
+    });
+};
+
 const copyAllTagsToClipboard = () => {
     // NOTE: Keep comment for example of syntax
     // const allDrafts = Draft.query("", "all", [], [], "modified", true, false);

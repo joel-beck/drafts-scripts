@@ -56,6 +56,15 @@ export {
   toTitleCase,
   toUpperCaseCustom,
   trimWhitespace,
-} from "./actions-transform";
+} from "./actions-transform-case";
+
+export {
+  evaluate,
+  max,
+  mean,
+  min,
+  product,
+  sum,
+} from "./actions-transform-math";
 
 export { copyAllTagsToClipboard } from "./actions-shortcuts";
