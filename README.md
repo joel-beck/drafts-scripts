@@ -1,6 +1,6 @@
-# User Scripts for Drafts
+# Action Scripts for Drafts
 
-This repository contains a collection of scripts for the [Drafts](https://getdrafts.com/) app.
+This repository contains a collection of action scripts for the [Drafts](https://getdrafts.com/) app.
 
 
 ## Repository Structure
