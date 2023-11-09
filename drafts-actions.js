@@ -583,8 +583,8 @@ var toggleMarkdownCheckboxes = () => {
   toggleMarkdown.toggleMarkdownCheckboxes();
 };
 // src/actions-transform-case.ts
-var removeExtraWhitespace = (str) => {
-  return str.trim().replace(/\s+/g, " ");
+var removeExtraWhitespace = (s) => {
+  return s.trim().replace(/\s+/g, " ");
 };
 var removeWhitespace = () => {
   transformAndReplaceSelectedText((selectedText) => {
@@ -677,31 +677,31 @@ var sortLines = () => {
 };
 // src/actions-transform-math.ts
 class MathEvaluator {
-  selectedText;
+  trimmedText;
   separator;
   numbers;
   constructor() {
-    this.selectedText = getSelectedText().trim();
+    this.trimmedText = removeExtraWhitespace(getSelectedText()).trim();
     this.separator = this.findSeparator();
     this.numbers = this.splitBySeparator();
   }
   evaluate() {
-    const sanitizedExpression = this.selectedText.replace(/[^0-9+\-*/(). ]/g, "");
+    const sanitizedExpression = this.trimmedText.replace(/[^0-9+\-*/(). ]/g, "");
     const result = (0, eval)(sanitizedExpression);
     return String(result);
   }
   findSeparator() {
-    if (this.selectedText.includes("\n")) {
-      return "\n";
-    }
-    if (this.selectedText.includes(",")) {
-      return ",";
+    const separators = [",", ";"];
+    for (const separator of separators) {
+      if (this.trimmedText.includes(separator)) {
+        return separator;
+      }
     }
     return " ";
   }
   splitBySeparator() {
     const separator = this.findSeparator();
-    return this.selectedText.split(separator).map((n) => Number(n));
+    return this.trimmedText.split(separator).map((n) => Number(n));
   }
   sumToInt() {
     return this.numbers.reduce((a, b) => a + b, 0);

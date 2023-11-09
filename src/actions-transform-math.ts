@@ -1,13 +1,17 @@
+import {
+  removeExtraWhitespace,
+  trimWhitespace,
+} from "./actions-transform-case";
 import { getSelectedText } from "./helpers-get-text";
-import { transformAndReplaceSelectedText } from "./helpers-set-text";
+import { print, transformAndReplaceSelectedText } from "./helpers-set-text";
 
 class MathEvaluator {
-  public selectedText: string;
+  public trimmedText: string;
   public separator: string;
   public numbers: number[];
 
   constructor() {
-    this.selectedText = getSelectedText().trim();
+    this.trimmedText = removeExtraWhitespace(getSelectedText()).trim();
     this.separator = this.findSeparator();
     this.numbers = this.splitBySeparator();
   }
@@ -16,7 +20,7 @@ class MathEvaluator {
     // Remove any non-numeric and non-operator characters
     // This is a simple sanitation and may not be foolproof.
     // Further validation/sanitization might be necessary based on use case.
-    const sanitizedExpression = this.selectedText.replace(
+    const sanitizedExpression = this.trimmedText.replace(
       /[^0-9+\-*/(). ]/g,
       ""
     );
@@ -30,20 +34,22 @@ class MathEvaluator {
 
   // precedence order: newline > comma > space
   private findSeparator(): string {
-    if (this.selectedText.includes("\n")) {
-      return "\n";
+    // acts on trimmed input => requires only separators without spaces
+    const separators = [",", ";"];
+
+    for (const separator of separators) {
+      if (this.trimmedText.includes(separator)) {
+        return separator;
+      }
     }
 
-    if (this.selectedText.includes(",")) {
-      return ",";
-    }
-
+    // use single space as default separator
     return " ";
   }
 
   private splitBySeparator(): number[] {
     const separator = this.findSeparator();
-    return this.selectedText.split(separator).map((n) => Number(n));
+    return this.trimmedText.split(separator).map((n) => Number(n));
   }
 
   private sumToInt(): number {

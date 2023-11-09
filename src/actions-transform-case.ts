@@ -1,7 +1,9 @@
 import { transformAndReplaceSelectedText } from "./helpers-set-text";
 
-export const removeExtraWhitespace = (str: string): string => {
-  return str.trim().replace(/\s+/g, " ");
+// do not use as separate action since it takes an input parameter, use
+// `trimWhitespace()` instead
+export const removeExtraWhitespace = (s: string): string => {
+  return s.trim().replace(/\s+/g, " ");
 };
 
 /**
