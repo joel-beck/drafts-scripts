@@ -12,12 +12,18 @@ import {
   setSelectionStartEnd,
 } from "./helpers-set-text";
 
+/**
+ * Provides methods to add or remove syntax highlighting from selected text in Markdown format.
+ */
 class SyntaxHighlighter {
   public selectionStartIndex: number;
   public selectionLength: number;
   public selectionEndIndex: number;
   public selectedText: string;
 
+  /**
+   * Constructs a new SyntaxHighlighter instance and initializes selection details.
+   */
   constructor() {
     [this.selectionStartIndex, this.selectionLength] = getSelectedRange();
     this.selectionEndIndex = getSelectionEndIndex(
@@ -27,12 +33,20 @@ class SyntaxHighlighter {
     this.selectedText = getSelectedText();
   }
 
+  /**
+   * Determines if text has been selected.
+   * @returns {boolean} True if the selection length is greater than zero.
+   */
   textIsSelected = (): boolean => {
     return this.selectionLength > 0;
   };
 
-  // check if characters before selection start and after selection end are highlight
-  // characters
+  /**
+   * Checks if the selected text is highlighted asymmetrically, using different prefix and suffix.
+   * @param {string} highlightPrefix - The prefix used for highlighting.
+   * @param {string} highlightSuffix - The suffix used for highlighting.
+   * @returns {boolean} True if the text is highlighted asymmetrically.
+   */
   textIsHighlightedAsymmetric = (
     highlightPrefix: string,
     highlightSuffix: string
@@ -46,27 +60,43 @@ class SyntaxHighlighter {
     );
   };
 
+  /**
+   * Checks if the selected text is highlighted symmetrically, using the same character for prefix and suffix.
+   * @param {string} highlightChar - The character used for highlighting.
+   * @returns {boolean} True if the text is highlighted symmetrically.
+   */
   textIsHighlightedSymmetric = (highlightChar: string): boolean => {
     return this.textIsHighlightedAsymmetric(highlightChar, highlightChar);
   };
 
-  // add highlight characters around selected text
+  /**
+   * Adds asymmetric highlighting around the selected text.
+   * @param {string} highlightPrefix - The prefix used for highlighting.
+   * @param {string} highlightSuffix - The suffix used for highlighting.
+   */
   addHighlightAsymmetric = (
     highlightPrefix: string,
     highlightSuffix: string
   ): void => {
-    // replaces original selection
     setSelectedText(highlightPrefix + this.selectedText + highlightSuffix);
-
     setCursorPosition(
       this.selectionEndIndex + highlightPrefix.length + highlightSuffix.length
     );
   };
 
+  /**
+   * Adds symmetric highlighting around the selected text.
+   * @param {string} highlightChar - The character used for highlighting.
+   */
   addHighlightSymmetric = (highlightChar: string): void => {
     this.addHighlightAsymmetric(highlightChar, highlightChar);
   };
 
+  /**
+   * Removes asymmetric highlighting from the selected text.
+   * @param {string} highlightPrefix - The prefix used for highlighting.
+   * @param {string} highlightSuffix - The suffix used for highlighting.
+   */
   removeHighlightAsymmetric = (
     highlightPrefix: string,
     highlightSuffix: string
@@ -78,82 +108,94 @@ class SyntaxHighlighter {
     setSelectedText(this.selectedText);
   };
 
-  // remove highlight characters around selected text
+  /**
+   * Removes symmetric highlighting from the selected text.
+   * @param {string} highlightChar - The character used for highlighting.
+   */
   removeHighlightSymmetric = (highlightChar: string): void => {
     this.removeHighlightAsymmetric(highlightChar, highlightChar);
   };
 
+  /**
+   * Toggles opening or closing of symmetric highlighting based on the cursor position.
+   * @param {string} highlightChar - The character used for highlighting.
+   */
   openOrClose = (highlightChar: string): void => {
     setSelectedText(highlightChar);
-    // sets cursor after highlighting character
     setCursorPosition(this.selectionStartIndex + highlightChar.length);
   };
 
+  /**
+   * Adds or removes symmetric highlighting to or from the selected text.
+   * @param {string} highlightChar - The character used for highlighting.
+   */
   addOrRemoveHighlightSymmetric = (highlightChar: string): void => {
-    // case 1: no selection => add open or closing highlight character
     if (!this.textIsSelected()) {
       this.openOrClose(highlightChar);
       return;
     }
-
-    // case 2: text is selected and already highlighted => remove highlight
     if (this.textIsHighlightedSymmetric(highlightChar)) {
       this.removeHighlightSymmetric(highlightChar);
       return;
     }
-
-    // case 3: text is selected but not highlighted => add highlight
     this.addHighlightSymmetric(highlightChar);
   };
 
+  /**
+   * Adds or removes asymmetric highlighting to or from the selected text.
+   * @param {string} highlightPrefix - The prefix used for highlighting.
+   * @param {string} highlightSuffix - The suffix used for highlighting.
+   */
   addOrRemoveHighlightAsymmetric = (
     highlightPrefix: string,
     highlightSuffix: string
   ): void => {
-    // case 1: no selection => add open or closing highlight character
     if (!this.textIsSelected()) {
-      // check if last highlight character before cursor is prefix or suffix
       const textBeforeCursor = getTextBefore(this.selectionStartIndex);
-
       const lastPrefixIndex = textBeforeCursor.lastIndexOf(highlightPrefix);
       const lastSuffixIndex = textBeforeCursor.lastIndexOf(highlightSuffix);
-
       if (lastPrefixIndex > lastSuffixIndex) {
-        // last highlight character before cursor is prefix
         this.openOrClose(highlightSuffix);
       } else {
-        // last highlight character before cursor is suffix
         this.openOrClose(highlightPrefix);
       }
       return;
     }
-
-    // case 2: text is selected and already highlighted => remove highlight
     if (this.textIsHighlightedAsymmetric(highlightPrefix, highlightSuffix)) {
       this.removeHighlightAsymmetric(highlightPrefix, highlightSuffix);
       return;
     }
-
-    // case 3: text is selected but not highlighted => add highlight
     this.addHighlightAsymmetric(highlightPrefix, highlightSuffix);
   };
 }
 
+/**
+ * Toggles bold highlighting on the selected text.
+ */
 export const highlightBold = (): void => {
   const syntaxHighlighter = new SyntaxHighlighter();
   syntaxHighlighter.addOrRemoveHighlightSymmetric("**");
 };
 
+/**
+ * Toggles italic highlighting on the selected text.
+ */
 export const highlightItalic = (): void => {
   const syntaxHighlighter = new SyntaxHighlighter();
   syntaxHighlighter.addOrRemoveHighlightSymmetric("*");
 };
 
+/**
+ * Toggles code highlighting on the selected text.
+ */
 export const highlightCode = (): void => {
   const syntaxHighlighter = new SyntaxHighlighter();
   syntaxHighlighter.addOrRemoveHighlightSymmetric("`");
 };
 
+/**
+ * Toggles code block highlighting on the selected text.
+ */
 export const highlightCodeBlock = (): void => {
   const syntaxHighlighter = new SyntaxHighlighter();
   syntaxHighlighter.addOrRemoveHighlightAsymmetric("```\n", "\n```");

@@ -11,6 +11,9 @@ import {
   setSelectionRange,
 } from "./helpers-set-text";
 
+/**
+ * Class responsible for toggling markdown task and checkbox states within a text selection.
+ */
 class ToggleMarkdown {
   public taskState: {
     readonly uncheckedBox: string;
@@ -21,6 +24,9 @@ class ToggleMarkdown {
   public taskPatterns: string[];
   public CheckboxPatterns: string[];
 
+  /**
+   * Initializes the class with predefined task states and patterns.
+   */
   constructor() {
     this.taskState = {
       uncheckedBox: "[ ]",
@@ -37,6 +43,12 @@ class ToggleMarkdown {
     this.CheckboxPatterns = Object.values(this.taskState);
   }
 
+  /**
+   * Checks if a line of text starts with any of the given markdown patterns.
+   * @param {string} line - The line of text to check.
+   * @param {string[]} patterns - The patterns to check against.
+   * @returns {boolean} True if the line starts with one of the patterns.
+   */
   lineHasPattern(line: string, patterns: string[]): boolean {
     const trimmedLine = line.trim();
     return patterns.some((pattern) => trimmedLine.startsWith(pattern));
@@ -112,6 +124,9 @@ class ToggleMarkdown {
       .join("\n");
   };
 
+  /**
+   * Toggles markdown tasks on or off for selected lines.
+   */
   toggleMarkdownTasks = (): void => {
     this.toggleMarkdown(this.toggleTasksSelection);
   };
@@ -159,30 +174,31 @@ class ToggleMarkdown {
     return selectedLines.map((line) => this.checkBox(line)).join("\n");
   };
 
+  /**
+   * Toggles markdown checkboxes on or off for selected lines.
+   */
   toggleMarkdownCheckboxes = (): void => {
     this.toggleMarkdown(this.toggleCheckboxesSelection);
   };
 }
 
 /**
-     Strategy:
-      - works for selection of multiple lines
-      - if no text is selected, consider the current line as selection
-      - if any of the selected lines is already a task, remove the task mark from all lines
-      - if none of the selected lines is a task, add a task mark to all lines
-  */
+ * Toggles markdown task list items within the selected text.
+ * - If no text is selected, it uses the current line.
+ * - If any of the selected lines is a task, it removes the task marker from all lines.
+ * - If none of the selected lines is a task, it adds a task marker to all lines.
+ */
 export const toggleMarkdownTasks = (): void => {
   const toggleMarkdown = new ToggleMarkdown();
   toggleMarkdown.toggleMarkdownTasks();
 };
 
 /**
-   Strategy:
-    - works for selection of multiple lines
-    - if no text is selected, consider the current line as selection
-    - if any of the selected tasks is already checked, uncheck all tasks
-    - if none of the selected tasks is checked, check all tasks
-  */
+ * Toggles markdown checkboxes within the selected text.
+ * - If no text is selected, it uses the current line.
+ * - If any of the selected lines has a checked box, it unchecks all tasks.
+ * - If none of the selected lines has a checked box, it checks all tasks.
+ */
 export const toggleMarkdownCheckboxes = (): void => {
   const toggleMarkdown = new ToggleMarkdown();
   toggleMarkdown.toggleMarkdownCheckboxes();

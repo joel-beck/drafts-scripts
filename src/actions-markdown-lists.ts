@@ -4,15 +4,36 @@ import {
   getTextFromStartEnd,
 } from "./helpers-get-text";
 
-import { setCursorPosition, setTextFromStartEnd } from "./helpers-set-text";
+import { insertTextAndSetCursor } from "./helpers-set-text";
+
+const getIndentation = (lineText: string): string => {
+  const indentationRegex = /^(\s*)/;
+  const indentationMatch = lineText.match(indentationRegex);
+
+  if (!indentationMatch) {
+    return "";
+  }
+
+  return indentationMatch[1];
+};
+
+const checkIfLineIsListItem = (lineText: string): boolean => {
+  const listItemRegex = /^(\s*)([-*+]|\d+\.)\s/;
+  const listItemMatch = lineText.match(listItemRegex);
+
+  if (!listItemMatch) {
+    return false;
+  }
+
+  return true;
+};
 
 /**
-Shift+Enter within a list should jump to the next line
-- without adding a new list marker
-- keeping the indentation of the current line
-*/
-export const linebreakWithinList = (): void => {
-  // this is the absolute index within the draft
+ * Inserts a line break within a list item or indented line, maintaining the current indentation
+ * or increasing it by two spaces if the line is a list item.
+ * Designed to be used as an action when Shift+Enter is pressed inside a list item in the Drafts app.
+ */
+export const linebreakKeepIndentation = (): void => {
   const currentLineStartIndex = getCurrentLineStartIndex();
   const currentLineEndIndex = getCurrentLineEndIndex();
   const currentLineText = getTextFromStartEnd(
@@ -20,25 +41,14 @@ export const linebreakWithinList = (): void => {
     currentLineEndIndex
   );
 
-  const hasListMarker = currentLineText.match("^\\s*[-]");
-  // 2 for the list marker itself and the following whitespace
-  const extraListMarkerLength = hasListMarker ? 2 : 0;
-  const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
+  let indentation = getIndentation(currentLineText);
 
-  // only whitespace at the beginning of the line
-  // if line does not start with whitespace, set to empty string
-  const currentLineWhitespace = currentLineText.match("^\\s*")?.[0] ?? "";
+  const isListItem = checkIfLineIsListItem(currentLineText);
+  if (isListItem) {
+    indentation += "  "; // Add two spaces for the list marker
+  }
 
-  // add whitespace characters until reaching the indentation length within the next line
-  const whitespaceIndentation =
-    "\n" + currentLineWhitespace + extraListMarkerWhitespace;
-
-  const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
-
-  setTextFromStartEnd(
-    whitespaceIndentation,
-    currentLineEndIndex,
-    newCursorPosition
-  );
-  setCursorPosition(newCursorPosition);
+  // Insert the new line with the correct indentation level
+  const newLineText = `\n${indentation}`;
+  insertTextAndSetCursor(newLineText, currentLineEndIndex);
 };

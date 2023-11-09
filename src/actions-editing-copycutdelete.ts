@@ -18,112 +18,132 @@ import {
 
 import { copyToClipboard } from "./helpers-utils";
 
+/**
+ * Handles copying, cutting, and deleting of lines within the Drafts app.
+ */
 class CopyCutDelete {
   public lineStartIndex: number;
   public lineLength: number;
   public text: string;
   public cursorPosition: number;
 
+  /**
+   * Initializes a new instance of the CopyCutDelete class, capturing the current line's details.
+   */
   constructor() {
     [this.lineStartIndex, this.lineLength] = getCurrentLineRange();
     this.text = getTextfromRange(this.lineStartIndex, this.lineLength);
     this.cursorPosition = getCursorPosition();
   }
 
+  /**
+   * Adds a newline character if the current line is the end of the draft.
+   * @returns {string} A newline character or an empty string.
+   */
   private addNewlineIfEndOfDraft = (): string => {
-    // if original line is last line in draft, add newline as separator between the lines,
-    // i.e. after the new text
     return isLastLine(this.text) ? "\n" : "";
   };
 
+  /**
+   * Copies the current line above itself.
+   */
   public copyLineUp = (): void => {
-    // copy line up
     setTextinRange(
       this.text + this.addNewlineIfEndOfDraft(),
       this.lineStartIndex,
       0
     );
-
-    // keep cursor at the same position
     setCursorPosition(this.cursorPosition);
   };
 
+  /**
+   * Copies the current line below itself.
+   */
   public copyLineDown = (): void => {
     const newlineIfEndOfDraft = this.addNewlineIfEndOfDraft();
-
-    // copy line down
     setTextinRange(
       newlineIfEndOfDraft + this.text,
       this.lineStartIndex + this.lineLength,
       0
     );
-
-    // set cursor at the same position, just one line below
     setCursorPosition(
       this.cursorPosition + this.lineLength + newlineIfEndOfDraft.length
     );
   };
 
+  /**
+   * Copies the current line or the selected text to the clipboard.
+   */
   public copyLineToClipboard = (): void => {
     const selectedText = getSelectedTextOrCurrentLine();
     copyToClipboard(selectedText);
   };
 
+  /**
+   * Cuts the current line or the selected text to the clipboard.
+   */
   public cutLine = (): void => {
     const selectedRange = getSelectionOrCurrentLineRange();
     const selectedText = getTextfromRange(...selectedRange);
-
     copyToClipboard(selectedText);
     setSelectionRangeKeepNewline(...selectedRange);
     setSelectedText("");
   };
 
+  /**
+   * Deletes the current line or the selected text from the draft.
+   */
   public deleteLine = (): void => {
-    // replace text in current line with nothing
     setTextinRange("", this.lineStartIndex, this.lineLength);
-
-    // text from current line end to end of draft
     let remainingText = getTextfromRange(
       this.lineStartIndex + this.lineLength - 2,
       getDraftLength()
     ).trim();
-
     if (remainingText) {
-      // any of the following lines contain text: set cursor to beginning of current line
       setCursorPosition(this.lineStartIndex);
     } else {
-      // all following lines are empty:
-      // set cursor to end of previous line
       setCursorPosition(this.lineStartIndex - 1);
-      // get line range of previous line
       const previousLineStartIndex = getCurrentLineStartIndex();
-      // set cursor to beginning of previous line
       setCursorPosition(previousLineStartIndex);
     }
-    // debug(remainingText);
   };
 }
 
+/**
+ * Copies the current line above itself.
+ */
 export const copyLineUp = (): void => {
   const copyCutDelete = new CopyCutDelete();
   copyCutDelete.copyLineUp();
 };
 
+/**
+ * Copies the current line below itself.
+ */
 export const copyLineDown = (): void => {
   const copyCutDelete = new CopyCutDelete();
   copyCutDelete.copyLineDown();
 };
 
+/**
+ * Copies the current line or the selected text to the clipboard.
+ */
 export const copyLineToClipboard = (): void => {
   const copyCutDelete = new CopyCutDelete();
   copyCutDelete.copyLineToClipboard();
 };
 
+/**
+ * Cuts the current line or the selected text to the clipboard.
+ */
 export const cutLine = (): void => {
   const copyCutDelete = new CopyCutDelete();
   copyCutDelete.cutLine();
 };
 
+/**
+ * Deletes the current line or the selected text from the draft.
+ */
 export const deleteLine = (): void => {
   const copyCutDelete = new CopyCutDelete();
   copyCutDelete.deleteLine();

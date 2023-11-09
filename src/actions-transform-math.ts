@@ -59,50 +59,61 @@ class MathEvaluator {
   }
 }
 
-// function to evaluate a mathematical expression in a string with javascript
+/**
+ * Evaluates the mathematical expression from the selected text.
+ */
 export const evaluate = (): void => {
   const mathEvaluator = new MathEvaluator();
-
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.evaluate();
   });
 };
 
+/**
+ * Calculates and replaces the selected text with the sum of the numbers in it.
+ */
 export const sum = (): void => {
   const mathEvaluator = new MathEvaluator();
-
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.sum();
   });
 };
 
+/**
+ * Calculates and replaces the selected text with the product of the numbers in it.
+ */
 export const product = (): void => {
   const mathEvaluator = new MathEvaluator();
-
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.product();
   });
 };
 
+/**
+ * Finds and replaces the selected text with the maximum number from it.
+ */
 export const max = (): void => {
   const mathEvaluator = new MathEvaluator();
-
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.max();
   });
 };
 
+/**
+ * Finds and replaces the selected text with the minimum number from it.
+ */
 export const min = (): void => {
   const mathEvaluator = new MathEvaluator();
-
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.min();
   });
 };
 
+/**
+ * Calculates and replaces the selected text with the mean (average) of the numbers in it.
+ */
 export const mean = (): void => {
   const mathEvaluator = new MathEvaluator();
-
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.mean();
   });

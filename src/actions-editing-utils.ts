@@ -8,6 +8,9 @@ import {
 
 import { getClipboard } from "./helpers-utils";
 
+/**
+ * Inserts the text obtained from the dictation feature at the current selection or cursor position.
+ */
 export const insertDictation = (): void => {
   const [selectionStartIndex, selectionLength] = getSelectedRange();
 
@@ -22,6 +25,9 @@ export const insertDictation = (): void => {
   }
 };
 
+/**
+ * Pastes the text from the clipboard at the current selection or cursor position.
+ */
 export const pasteClipboard = (): void => {
   const clipboard = getClipboard();
   const selectionStartIndex = getSelectionStartIndex();

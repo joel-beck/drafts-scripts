@@ -4,23 +4,36 @@ export const removeExtraWhitespace = (str: string): string => {
   return str.trim().replace(/\s+/g, " ");
 };
 
+/**
+ * Removes extra whitespaces from the selected text and replaces it without any whitespace.
+ */
 export const removeWhitespace = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return removeExtraWhitespace(selectedText).replace(/\s/g, "");
   });
 };
+
+/**
+ * Trims leading and trailing whitespaces from the selected text.
+ */
 export const trimWhitespace = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return removeExtraWhitespace(selectedText).trim();
   });
 };
 
+/**
+ * Converts the selected text to lower case after removing extra whitespaces.
+ */
 export const toLowerCaseCustom = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return removeExtraWhitespace(selectedText).toLowerCase();
   });
 };
 
+/**
+ * Converts the selected text to upper case after removing extra whitespaces.
+ */
 export const toUpperCaseCustom = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return removeExtraWhitespace(selectedText).toUpperCase();
@@ -43,12 +56,18 @@ const _toTitleCase = (str: string): string => {
   return removeExtraWhitespace(str).split(" ").map(_toTitleCaseWord).join(" ");
 };
 
+/**
+ * Converts the selected text to title case.
+ */
 export const toTitleCase = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return _toTitleCase(selectedText);
   });
 };
 
+/**
+ * Capitalizes the first letter of the selected text.
+ */
 export const capitalize = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     const noExtraWhitespace = removeExtraWhitespace(selectedText);
@@ -73,6 +92,9 @@ const _toMemeCaseWord = (str: string): string => {
   return transformed_chars.join("");
 };
 
+/**
+ * Converts the selected text to meme case, where every other character is capitalized.
+ */
 export const toMemeCase = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return removeExtraWhitespace(selectedText)
@@ -82,22 +104,34 @@ export const toMemeCase = (): void => {
   });
 };
 
+/**
+ * Replaces all whitespaces in the selected text with a specified replacement character.
+ */
 export const replaceWhitespace = (str: string, replacement: string): string => {
   return removeExtraWhitespace(str).replace(/\s/g, replacement);
 };
 
+/**
+ * Converts the selected text to snake case.
+ */
 export const toSnakeCase = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return replaceWhitespace(selectedText, "_");
   });
 };
 
+/**
+ * Converts the selected text to hyphen case.
+ */
 export const toHyphenCase = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return replaceWhitespace(selectedText, "-");
   });
 };
 
+/**
+ * Converts the selected text to Pascal case.
+ */
 export const toPascalCase = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     const noExtraWhitespace = removeExtraWhitespace(selectedText);
@@ -106,6 +140,9 @@ export const toPascalCase = (): void => {
   });
 };
 
+/**
+ * Converts the selected text to camel case.
+ */
 export const toCamelCase = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     const noExtraWhitespace = removeExtraWhitespace(selectedText);
@@ -114,6 +151,9 @@ export const toCamelCase = (): void => {
   });
 };
 
+/**
+ * Sorts the lines in the selected text alphabetically.
+ */
 export const sortLines = (): void => {
   transformAndReplaceSelectedText((selectedText: string): string => {
     return selectedText

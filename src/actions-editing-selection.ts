@@ -8,6 +8,11 @@ import {
 import { setSelectionRange, trimSelectedText } from "./helpers-set-text";
 import { copySelectedTextToClipboard } from "./helpers-utils";
 
+/**
+ * Selects a section of text in the draft based on the provided separator.
+ *
+ * @param {string} sectionSeparator - The character(s) used to determine the section boundaries.
+ */
 const selectSection = (sectionSeparator: string): void => {
   const cursorPosition = getCursorPosition();
 
@@ -20,16 +25,13 @@ const selectSection = (sectionSeparator: string): void => {
     cursorPosition
   );
 
-  // do not include the section separator in the selection
   const sectionStart =
     previousSeparatorPosition === 0
       ? previousSeparatorPosition
       : previousSeparatorPosition + sectionSeparator.length;
 
-  // index of next separator is at the *beginning* of the separator => section ends here
   const sectionEnd = nextSeparatorPosition;
 
-  // remove all whitespace at the beginning and end of the selection
   const [trimmedSectionStart, trimmedSectionEnd] = trimSelectedText(
     sectionStart,
     sectionEnd
@@ -41,23 +43,33 @@ const selectSection = (sectionSeparator: string): void => {
   );
 };
 
+/**
+ * Selects the current line where the cursor is located.
+ */
 export const selectLine = (): void => {
   selectSection("\n");
 };
 
+/**
+ * Selects the current paragraph where the cursor is located.
+ */
 export const selectParagraph = (): void => {
   selectSection("\n\n");
 };
 
-// select partial response to message in draft, individual responses are separated by "---"
-// copy selected text directly to clipboard to paste message into another app
+/**
+ * Selects the text of a response in a conversation or message thread, typically separated by "---",
+ * and copies it to the clipboard.
+ */
 export const selectResponse = (): void => {
   selectSection("---");
   copySelectedTextToClipboard();
 };
 
+/**
+ * Selects all text in the draft.
+ */
 export const selectAll = (): void => {
   const endOfDraft = getDraftLength();
-  // length in second argument equals entire draft in this case since start has index 0
   setSelectionRange(0, endOfDraft);
 };

@@ -34,7 +34,7 @@ export {
   insertMarkdownLink,
 } from "./actions-markdown-links";
 
-export { linebreakWithinList } from "./actions-markdown-lists";
+export { linebreakKeepIndentation as linebreakWithinList } from "./actions-markdown-lists";
 
 export {
   toggleMarkdownCheckboxes,
