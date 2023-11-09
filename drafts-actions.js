@@ -309,12 +309,16 @@ class SyntaxHighlighter {
   textIsSelected = () => {
     return this.selectionLength > 0;
   };
-  textIsHighlightedAsymmetric = (highlightPrefix, highlightSuffix) => {
+  innerTextIsHighlighted = (highlightPrefix, highlightSuffix) => {
     const textBeforeSelection = getTextBefore(this.selectionStartIndex);
     const textAfterSelection = getTextAfter(this.selectionEndIndex);
-    const innerTextIsHighlighted = textBeforeSelection.endsWith(highlightPrefix) && textAfterSelection.startsWith(highlightSuffix);
-    const outerTextIsHighlighted = this.selectedText.startsWith(highlightPrefix) && this.selectedText.endsWith(highlightSuffix);
-    return innerTextIsHighlighted || outerTextIsHighlighted;
+    return textBeforeSelection.endsWith(highlightPrefix) && textAfterSelection.startsWith(highlightSuffix);
+  };
+  outerTextIsHighlighted = (highlightPrefix, highlightSuffix) => {
+    return this.selectedText.startsWith(highlightPrefix) && this.selectedText.endsWith(highlightSuffix);
+  };
+  textIsHighlightedAsymmetric = (highlightPrefix, highlightSuffix) => {
+    return this.innerTextIsHighlighted(highlightPrefix, highlightSuffix) || this.outerTextIsHighlighted(highlightPrefix, highlightSuffix);
   };
   textIsHighlightedSymmetric = (highlightChar) => {
     return this.textIsHighlightedAsymmetric(highlightChar, highlightChar);
@@ -327,8 +331,7 @@ class SyntaxHighlighter {
     this.addHighlightAsymmetric(highlightChar, highlightChar);
   };
   removeHighlightAsymmetric = (highlightPrefix, highlightSuffix) => {
-    const includesPrefixAndSuffix = this.selectedText.startsWith(highlightPrefix) && this.selectedText.endsWith(highlightSuffix);
-    if (includesPrefixAndSuffix) {
+    if (this.outerTextIsHighlighted(highlightPrefix, highlightSuffix)) {
       setSelectedText(this.selectedText.slice(highlightPrefix.length, -highlightSuffix.length));
       return;
     }
@@ -338,13 +341,13 @@ class SyntaxHighlighter {
   removeHighlightSymmetric = (highlightChar) => {
     this.removeHighlightAsymmetric(highlightChar, highlightChar);
   };
-  openOrClose = (highlightChar) => {
+  insertOpeningOrClosingCharacter = (highlightChar) => {
     setSelectedText(highlightChar);
     setCursorPosition(this.selectionStartIndex + highlightChar.length);
   };
   addOrRemoveHighlightSymmetric = (highlightChar) => {
     if (!this.textIsSelected()) {
-      this.openOrClose(highlightChar);
+      this.insertOpeningOrClosingCharacter(highlightChar);
       return;
     }
     if (this.textIsHighlightedSymmetric(highlightChar)) {
@@ -359,9 +362,9 @@ class SyntaxHighlighter {
       const lastPrefixIndex = textBeforeCursor.lastIndexOf(highlightPrefix);
       const lastSuffixIndex = textBeforeCursor.lastIndexOf(highlightSuffix);
       if (lastPrefixIndex > lastSuffixIndex) {
-        this.openOrClose(highlightSuffix);
+        this.insertOpeningOrClosingCharacter(highlightSuffix);
       } else {
-        this.openOrClose(highlightPrefix);
+        this.insertOpeningOrClosingCharacter(highlightPrefix);
       }
       return;
     }
@@ -683,7 +686,9 @@ class MathEvaluator {
     this.numbers = this.splitBySeparator();
   }
   evaluate() {
-    return (0, eval)(this.selectedText);
+    const sanitizedExpression = this.selectedText.replace(/[^0-9+\-*/(). ]/g, "");
+    const result = (0, eval)(sanitizedExpression);
+    return String(result);
   }
   findSeparator() {
     if (this.selectedText.includes("\n")) {
@@ -717,7 +722,7 @@ class MathEvaluator {
     return (this.sumToInt() / this.numbers.length).toString();
   }
 }
-var evaluate = () => {
+var evaluateMathExpression = () => {
   const mathEvaluator = new MathEvaluator;
   transformAndReplaceSelectedText(() => {
     return mathEvaluator.evaluate();

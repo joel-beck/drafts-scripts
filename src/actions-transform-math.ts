@@ -13,7 +13,19 @@ class MathEvaluator {
   }
 
   public evaluate(): string {
-    return eval(this.selectedText);
+    // Remove any non-numeric and non-operator characters
+    // This is a simple sanitation and may not be foolproof.
+    // Further validation/sanitization might be necessary based on use case.
+    const sanitizedExpression = this.selectedText.replace(
+      /[^0-9+\-*/(). ]/g,
+      ""
+    );
+
+    // Evaluate the sanitized expression
+    const result = eval(sanitizedExpression);
+
+    // Convert the result to a string and return
+    return String(result);
   }
 
   // precedence order: newline > comma > space
@@ -62,7 +74,7 @@ class MathEvaluator {
 /**
  * Evaluates the mathematical expression from the selected text.
  */
-export const evaluate = (): void => {
+export const evaluateMathExpression = (): void => {
   const mathEvaluator = new MathEvaluator();
   transformAndReplaceSelectedText((): string => {
     return mathEvaluator.evaluate();

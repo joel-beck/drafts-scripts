@@ -59,7 +59,7 @@ export {
 } from "./actions-transform-case";
 
 export {
-  evaluate,
+  evaluateMathExpression,
   max,
   mean,
   min,
