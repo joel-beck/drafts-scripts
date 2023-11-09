@@ -73,10 +73,16 @@ const insertMarkdownLinkWithPrefix = (prefix: string): void => {
   markdownLink.insertFullLink();
 };
 
+/**
+ * Inserts a Markdown link using the URL from the clipboard and the selected text.
+ */
 export const insertMarkdownLink = (): void => {
   insertMarkdownLinkWithPrefix("");
 };
 
+/**
+ * Inserts a Markdown image using the URL from the clipboard and the selected text.
+ */
 export const insertMarkdownImage = (): void => {
   insertMarkdownLinkWithPrefix("!");
 };

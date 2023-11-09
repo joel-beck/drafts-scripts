@@ -7,10 +7,9 @@ import {
 import { setCursorPosition, setTextFromStartEnd } from "./helpers-set-text";
 
 /**
-Shift+Enter within a list should jump to the next line
-- without adding a new list marker
-- keeping the indentation of the current line
-*/
+ * Inserts a line break within a list item, maintaining the current indentation and list marker.
+ * Designed to be used as an action when Shift+Enter is pressed inside a list item in the Drafts app.
+ */
 export const linebreakWithinList = (): void => {
   // this is the absolute index within the draft
   const currentLineStartIndex = getCurrentLineStartIndex();
@@ -20,21 +19,24 @@ export const linebreakWithinList = (): void => {
     currentLineEndIndex
   );
 
+  // Check if the current line starts with a list marker (e.g., '-', '*', etc.)
   const hasListMarker = currentLineText.match("^\\s*[-]");
-  // 2 for the list marker itself and the following whitespace
+  // Length to account for the list marker and the whitespace after it
   const extraListMarkerLength = hasListMarker ? 2 : 0;
   const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
 
-  // only whitespace at the beginning of the line
-  // if line does not start with whitespace, set to empty string
+  // Capture only the whitespace at the beginning of the line
+  // If the line does not start with whitespace, set to an empty string
   const currentLineWhitespace = currentLineText.match("^\\s*")?.[0] ?? "";
 
-  // add whitespace characters until reaching the indentation length within the next line
+  // Combine the whitespace and extra indentation to form the full indentation for the new line
   const whitespaceIndentation =
     "\n" + currentLineWhitespace + extraListMarkerWhitespace;
 
+  // Calculate the position for the cursor after the new indentation is inserted
   const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
 
+  // Insert the indentation at the end of the current line and update the cursor position
   setTextFromStartEnd(
     whitespaceIndentation,
     currentLineEndIndex,
