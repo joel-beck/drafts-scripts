@@ -42,7 +42,9 @@ class SyntaxHighlighter {
   };
 
   /**
-   * Checks if the selected text is highlighted asymmetrically, using different prefix and suffix.
+   * Checks if the selected text is highlighted asymmetrically, using different prefix
+   * and suffix. Return true either if the text in between prefix and suffix is selected
+   * or if the text including prefix and suffix is selected.
    * @param {string} highlightPrefix - The prefix used for highlighting.
    * @param {string} highlightSuffix - The suffix used for highlighting.
    * @returns {boolean} True if the text is highlighted asymmetrically.
@@ -54,10 +56,15 @@ class SyntaxHighlighter {
     const textBeforeSelection = getTextBefore(this.selectionStartIndex);
     const textAfterSelection = getTextAfter(this.selectionEndIndex);
 
-    return (
+    const innerTextIsHighlighted =
       textBeforeSelection.endsWith(highlightPrefix) &&
-      textAfterSelection.startsWith(highlightSuffix)
-    );
+      textAfterSelection.startsWith(highlightSuffix);
+
+    const outerTextIsHighlighted =
+      this.selectedText.startsWith(highlightPrefix) &&
+      this.selectedText.endsWith(highlightSuffix);
+
+    return innerTextIsHighlighted || outerTextIsHighlighted;
   };
 
   /**
@@ -93,7 +100,9 @@ class SyntaxHighlighter {
   };
 
   /**
-   * Removes asymmetric highlighting from the selected text.
+   * Removes asymmetric highlighting from the selected text. Works if only the text in
+   * between prefix and suffix is selected or if the text including prefix and suffix is
+   * selected.
    * @param {string} highlightPrefix - The prefix used for highlighting.
    * @param {string} highlightSuffix - The suffix used for highlighting.
    */
@@ -101,6 +110,17 @@ class SyntaxHighlighter {
     highlightPrefix: string,
     highlightSuffix: string
   ): void => {
+    const includesPrefixAndSuffix =
+      this.selectedText.startsWith(highlightPrefix) &&
+      this.selectedText.endsWith(highlightSuffix);
+    if (includesPrefixAndSuffix) {
+      setSelectedText(
+        this.selectedText.slice(highlightPrefix.length, -highlightSuffix.length)
+      );
+      return;
+    }
+
+    // only inner text is selected
     setSelectionStartEnd(
       this.selectionStartIndex - highlightPrefix.length,
       this.selectionEndIndex + highlightSuffix.length
