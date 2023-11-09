@@ -41,6 +41,29 @@ class SyntaxHighlighter {
     return this.selectionLength > 0;
   };
 
+  innerTextIsHighlighted = (
+    highlightPrefix: string,
+    highlightSuffix: string
+  ): boolean => {
+    const textBeforeSelection = getTextBefore(this.selectionStartIndex);
+    const textAfterSelection = getTextAfter(this.selectionEndIndex);
+
+    return (
+      textBeforeSelection.endsWith(highlightPrefix) &&
+      textAfterSelection.startsWith(highlightSuffix)
+    );
+  };
+
+  outerTextIsHighlighted = (
+    highlightPrefix: string,
+    highlightSuffix: string
+  ): boolean => {
+    return (
+      this.selectedText.startsWith(highlightPrefix) &&
+      this.selectedText.endsWith(highlightSuffix)
+    );
+  };
+
   /**
    * Checks if the selected text is highlighted asymmetrically, using different prefix
    * and suffix. Return true either if the text in between prefix and suffix is selected
@@ -53,18 +76,10 @@ class SyntaxHighlighter {
     highlightPrefix: string,
     highlightSuffix: string
   ): boolean => {
-    const textBeforeSelection = getTextBefore(this.selectionStartIndex);
-    const textAfterSelection = getTextAfter(this.selectionEndIndex);
-
-    const innerTextIsHighlighted =
-      textBeforeSelection.endsWith(highlightPrefix) &&
-      textAfterSelection.startsWith(highlightSuffix);
-
-    const outerTextIsHighlighted =
-      this.selectedText.startsWith(highlightPrefix) &&
-      this.selectedText.endsWith(highlightSuffix);
-
-    return innerTextIsHighlighted || outerTextIsHighlighted;
+    return (
+      this.innerTextIsHighlighted(highlightPrefix, highlightSuffix) ||
+      this.outerTextIsHighlighted(highlightPrefix, highlightSuffix)
+    );
   };
 
   /**
@@ -86,6 +101,7 @@ class SyntaxHighlighter {
     highlightSuffix: string
   ): void => {
     setSelectedText(highlightPrefix + this.selectedText + highlightSuffix);
+    // set cursor position after suffix
     setCursorPosition(
       this.selectionEndIndex + highlightPrefix.length + highlightSuffix.length
     );
@@ -110,10 +126,7 @@ class SyntaxHighlighter {
     highlightPrefix: string,
     highlightSuffix: string
   ): void => {
-    const includesPrefixAndSuffix =
-      this.selectedText.startsWith(highlightPrefix) &&
-      this.selectedText.endsWith(highlightSuffix);
-    if (includesPrefixAndSuffix) {
+    if (this.outerTextIsHighlighted(highlightPrefix, highlightSuffix)) {
       setSelectedText(
         this.selectedText.slice(highlightPrefix.length, -highlightSuffix.length)
       );
@@ -140,7 +153,7 @@ class SyntaxHighlighter {
    * Toggles opening or closing of symmetric highlighting based on the cursor position.
    * @param {string} highlightChar - The character used for highlighting.
    */
-  openOrClose = (highlightChar: string): void => {
+  insertOpeningOrClosingCharacter = (highlightChar: string): void => {
     setSelectedText(highlightChar);
     setCursorPosition(this.selectionStartIndex + highlightChar.length);
   };
@@ -151,13 +164,15 @@ class SyntaxHighlighter {
    */
   addOrRemoveHighlightSymmetric = (highlightChar: string): void => {
     if (!this.textIsSelected()) {
-      this.openOrClose(highlightChar);
+      this.insertOpeningOrClosingCharacter(highlightChar);
       return;
     }
+
     if (this.textIsHighlightedSymmetric(highlightChar)) {
       this.removeHighlightSymmetric(highlightChar);
       return;
     }
+
     this.addHighlightSymmetric(highlightChar);
   };
 
@@ -174,13 +189,15 @@ class SyntaxHighlighter {
       const textBeforeCursor = getTextBefore(this.selectionStartIndex);
       const lastPrefixIndex = textBeforeCursor.lastIndexOf(highlightPrefix);
       const lastSuffixIndex = textBeforeCursor.lastIndexOf(highlightSuffix);
+
       if (lastPrefixIndex > lastSuffixIndex) {
-        this.openOrClose(highlightSuffix);
+        this.insertOpeningOrClosingCharacter(highlightSuffix);
       } else {
-        this.openOrClose(highlightPrefix);
+        this.insertOpeningOrClosingCharacter(highlightPrefix);
       }
       return;
     }
+
     if (this.textIsHighlightedAsymmetric(highlightPrefix, highlightSuffix)) {
       this.removeHighlightAsymmetric(highlightPrefix, highlightSuffix);
       return;
