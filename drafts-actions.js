@@ -312,7 +312,9 @@ class SyntaxHighlighter {
   textIsHighlightedAsymmetric = (highlightPrefix, highlightSuffix) => {
     const textBeforeSelection = getTextBefore(this.selectionStartIndex);
     const textAfterSelection = getTextAfter(this.selectionEndIndex);
-    return textBeforeSelection.endsWith(highlightPrefix) && textAfterSelection.startsWith(highlightSuffix);
+    const innerTextIsHighlighted = textBeforeSelection.endsWith(highlightPrefix) && textAfterSelection.startsWith(highlightSuffix);
+    const outerTextIsHighlighted = this.selectedText.startsWith(highlightPrefix) && this.selectedText.endsWith(highlightSuffix);
+    return innerTextIsHighlighted || outerTextIsHighlighted;
   };
   textIsHighlightedSymmetric = (highlightChar) => {
     return this.textIsHighlightedAsymmetric(highlightChar, highlightChar);
@@ -325,6 +327,11 @@ class SyntaxHighlighter {
     this.addHighlightAsymmetric(highlightChar, highlightChar);
   };
   removeHighlightAsymmetric = (highlightPrefix, highlightSuffix) => {
+    const includesPrefixAndSuffix = this.selectedText.startsWith(highlightPrefix) && this.selectedText.endsWith(highlightSuffix);
+    if (includesPrefixAndSuffix) {
+      setSelectedText(this.selectedText.slice(highlightPrefix.length, -highlightSuffix.length));
+      return;
+    }
     setSelectionStartEnd(this.selectionStartIndex - highlightPrefix.length, this.selectionEndIndex + highlightSuffix.length);
     setSelectedText(this.selectedText);
   };
