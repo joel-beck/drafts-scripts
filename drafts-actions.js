@@ -108,9 +108,6 @@ var setSelectedText = (text) => {
 var setTextinRange = (text, startIndex, length) => {
   editor.setTextInRange(startIndex, length, text);
 };
-var setTextFromStartEnd = (text, startIndex, endIndex) => {
-  setTextinRange(text, startIndex, endIndex - startIndex);
-};
 var setSelectionRange = (selectionStartIndex, selectionLength) => {
   editor.setSelectedRange(selectionStartIndex, selectionLength);
 };
@@ -441,18 +438,33 @@ var insertMarkdownImage = () => {
   insertMarkdownLinkWithPrefix("!");
 };
 // src/actions-markdown-lists.ts
-var linebreakWithinList = () => {
+var getIndentation = (lineText) => {
+  const indentationRegex = /^(\s*)/;
+  const indentationMatch = lineText.match(indentationRegex);
+  if (!indentationMatch) {
+    return "";
+  }
+  return indentationMatch[1];
+};
+var checkIfLineIsListItem = (lineText) => {
+  const listItemRegex = /^(\s*)([-*+]|\d+\.)\s/;
+  const listItemMatch = lineText.match(listItemRegex);
+  if (!listItemMatch) {
+    return false;
+  }
+  return true;
+};
+var linebreakKeepIndentation = () => {
   const currentLineStartIndex = getCurrentLineStartIndex();
   const currentLineEndIndex = getCurrentLineEndIndex();
   const currentLineText = getTextFromStartEnd(currentLineStartIndex, currentLineEndIndex);
-  const hasListMarker = currentLineText.match("^\\s*[-]");
-  const extraListMarkerLength = hasListMarker ? 2 : 0;
-  const extraListMarkerWhitespace = " ".repeat(extraListMarkerLength);
-  const currentLineWhitespace = currentLineText.match("^\\s*")?.[0] ?? "";
-  const whitespaceIndentation = "\n" + currentLineWhitespace + extraListMarkerWhitespace;
-  const newCursorPosition = currentLineEndIndex + whitespaceIndentation.length;
-  setTextFromStartEnd(whitespaceIndentation, currentLineEndIndex, newCursorPosition);
-  setCursorPosition(newCursorPosition);
+  let indentation = getIndentation(currentLineText);
+  const isListItem = checkIfLineIsListItem(currentLineText);
+  if (isListItem) {
+    indentation += "  ";
+  }
+  const newLineText = `\n${indentation}`;
+  insertTextAndSetCursor(newLineText, currentLineEndIndex);
 };
 // src/actions-markdown-tasks.ts
 class ToggleMarkdown {
